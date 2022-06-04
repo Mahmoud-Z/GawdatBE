@@ -1,0 +1,25 @@
+{
+  "name": "dragdropback",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mahmoud-Z/DragDropBack.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mahmoud-Z/DragDropBack/issues"
+  },
+  "homepage": "https://github.com/Mahmoud-Z/DragDropBack#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "mssql": "^8.1.0",
+    "nodemon": "^2.0.16"
+  }
+}
