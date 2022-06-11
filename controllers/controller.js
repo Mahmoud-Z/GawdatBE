@@ -5,65 +5,7 @@ const e = require('cors');
 const sql = require('mssql')//call for using sql module
 let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
-module.exports.test = async (req, res) => {
-    let json={
-        "OraPayloadResponseEntity": {
-            "clientVersion": "1.0.0.0",
-            "Response": {
-                "CheckNum": "7155",
-                "HarmonyId": "39",
-                "Partnerid": "FATORTY_Receipt_ID",
-                "Timestamp": "2022-05-19T19:05:29",
-                "Header": {
-                    "OraPayloadResponseCode": "1",
-                    "OraPayloadResponseDescription": "Success",
-                    "OraPayloadResponseRejectReason": "Invoice Received. Pending Approval"
-                },
-                "Printing": {
-                    "PrintDataList": {
-                        "OraPayloadPrintData": [
-                            {
-                               "@type": "String",
-                               "#text": "### TEST STRING ###"
-                            },					
-                            {
-                                "@type": "QRCode",							
-                                "@correctionLevel": "Level_H",
-                                "@justification": "Center",
-                                "@model": "Model2",
-                                "@size": "4",
-                                "#text": "http://www.myportal.com/QR/QRCode?p=33190901436319"
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-    }
-    var Service = require('node-windows').Service;
 
-// Create a new service object
-    var svc = new Service({
-    name:'Hello World',
-    description: 'The nodejs.org example web server.',
-    script: '../index.js',
-    nodeOptions: [
-        '--harmony',
-        '--max_old_space_size=4096'
-    ]
-    //, workingDirectory: '...'
-    //, allowServiceLogon: true
-    });
-
-    // Listen for the "install" event, which indicates the
-    // process is available as a service.
-    svc.on('install',function(){
-    svc.start();
-    });
-
-    svc.install();
-    res.json(json)
-}
 module.exports.importMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -75,6 +17,52 @@ module.exports.importMachine = async (req, res) => {
          VALUES
                ('${req.body.machineName}'
                )
+    `);
+    
+    res.json('inserted successfully')
+}
+
+module.exports.addUser = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    console.log(`
+
+    INSERT INTO [dbo].[addUser]
+    ([userName]
+    ,[password]
+    ,[userCheckBox]
+    ,[machineCheckBox]
+    ,[taskCheckBox]
+    ,[reportCheckBox]
+    ,[permissionCheckBox])
+VALUES
+    ('${req.body.userName}'
+    ,'${req.body.password}'
+    ,'${req.body.checkbox0}'
+    ,'${req.body.checkbox1}'
+    ,'${req.body.checkbox2}'
+    ,'${req.body.checkbox3}'
+    ,'${req.body.checkbox4}')
+    `);
+    await request.query(`
+
+    INSERT INTO [dbo].[addUser]
+    ([userName]
+    ,[password]
+    ,[userCheckBox]
+    ,[machineCheckBox]
+    ,[taskCheckBox]
+    ,[reportCheckBox]
+    ,[permissionCheckBox])
+VALUES
+    ('${req.body.userName}'
+    ,'${req.body.password}'
+    ,'${req.body.checkbox0}'
+    ,'${req.body.checkbox1}'
+    ,'${req.body.checkbox2}'
+    ,'${req.body.checkbox3}'
+    ,'${req.body.checkbox4}')
     `);
     
     res.json('inserted successfully')
