@@ -2,8 +2,7 @@ const appRoutes = require('express').Router();
 const controller=require('../controllers/controller')
 
 appRoutes.post("/importMachine", controller.importMachine)
-appRoutes.get("/test", controller.test)
-appRoutes.post("/importTasks", controller.importTasks)
+appRoutes.post("/addUser", controller.addUser)
 appRoutes.get("/getMachine", controller.getMachine)
 appRoutes.get("/getTasks", controller.getTasks)
 appRoutes.post("/deleteMachine", controller.deleteMachine)
