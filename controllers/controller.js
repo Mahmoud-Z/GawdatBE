@@ -5,6 +5,7 @@ const e = require('cors');
 const sql = require('mssql')//call for using sql module
 let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
+const bcrypt = require('bcrypt');
 
 module.exports.importMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -28,7 +29,7 @@ module.exports.addUser = async (req, res) => {
 
     console.log(`
 
-    INSERT INTO [dbo].[addUser]
+    INSERT INTO [dbo].[user]
     ([userName]
     ,[password]
     ,[userCheckBox]
@@ -45,9 +46,10 @@ VALUES
     ,'${req.body.checkbox3}'
     ,'${req.body.checkbox4}')
     `);
+    bcrypt.hash(req.body.password,8, async function (err, hash) {
     await request.query(`
 
-    INSERT INTO [dbo].[addUser]
+    INSERT INTO [dbo].[user]
     ([userName]
     ,[password]
     ,[userCheckBox]
@@ -57,7 +59,7 @@ VALUES
     ,[permissionCheckBox])
 VALUES
     ('${req.body.userName}'
-    ,'${req.body.password}'
+    ,'${hash}'
     ,'${req.body.checkbox0}'
     ,'${req.body.checkbox1}'
     ,'${req.body.checkbox2}'
@@ -65,7 +67,9 @@ VALUES
     ,'${req.body.checkbox4}')
     `);
     
+    
     res.json('inserted successfully')
+});
 }
 module.exports.importTasks = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -190,3 +194,49 @@ module.exports.changeTime = async (req, res) => {
     // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
     res.json('Deleted successfully')
 }
+
+
+
+
+//display sing in page 
+module.exports.logIn= async (req, res) => {
+                     console.log(req.body);
+    const { email, password } = req.body;
+    //db connection
+    let dbconfig = await sql.connect(config)
+    //find user in db 
+    const user = await sql.query(`select * from [dbo].[user] where userName = '${email}'`)
+    //check if user user not found 
+    if (user.recordset.length == 0) {
+     
+        res.json("user doesn't exist")
+
+      }
+    
+    else {
+      
+       let match = await bcrypt.compare(password,user.recordset[0].password.trim())
+
+      if (match) {
+        req.session.email = user.recordset[0].userName
+        req.session.isLoggedIn = true;
+        console.log(res);
+
+        res.json("done")
+       
+       
+      }
+
+      else {
+        res.json("WRONG PASSWORD")
+
+      }
+
+    }
+    
+
+}
+
+
+
+
