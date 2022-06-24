@@ -23,29 +23,26 @@ module.exports.importMachine = async (req, res) => {
     res.json('inserted successfully')
 }
 
+module.exports.checkUser = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    try {
+        let data=await request.query(`select userName from addUser where userName='${req.body.userName}'`);
+        res.json(data.recordset)
+
+    } catch (error) {
+        res.json("error")
+        
+    }
+}
+
+
+
 module.exports.addUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
 
-    console.log(`
 
-    INSERT INTO [dbo].[user]
-    ([userName]
-    ,[password]
-    ,[userCheckBox]
-    ,[machineCheckBox]
-    ,[taskCheckBox]
-    ,[reportCheckBox]
-    ,[permissionCheckBox])
-VALUES
-    ('${req.body.userName}'
-    ,'${req.body.password}'
-    ,'${req.body.checkbox0}'
-    ,'${req.body.checkbox1}'
-    ,'${req.body.checkbox2}'
-    ,'${req.body.checkbox3}'
-    ,'${req.body.checkbox4}')
-    `);
     bcrypt.hash(req.body.password,8, async function (err, hash) {
     await request.query(`
 
