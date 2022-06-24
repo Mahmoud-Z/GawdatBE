@@ -6,7 +6,6 @@ const sql = require('mssql')//call for using sql module
 let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
 const bcrypt = require('bcrypt');
-
 async function startTimer(newTask,id){
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -44,7 +43,6 @@ module.exports.importMachine = async (req, res) => {
     
     res.json('inserted successfully')
 }
-
 module.exports.checkUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -57,9 +55,6 @@ module.exports.checkUser = async (req, res) => {
         
     }
 }
-
-
-
 module.exports.addUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -205,11 +200,6 @@ module.exports.changeTime = async (req, res) => {
     // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
     res.json('Deleted successfully')
 }
-
-
-
-
-//display sing in page 
 module.exports.logIn= async (req, res) => {
                      console.log(req.body);
     const { email, password } = req.body;
@@ -247,11 +237,6 @@ module.exports.logIn= async (req, res) => {
     
 
 }
-
-
-
-
-
 module.exports.start = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
