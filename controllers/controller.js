@@ -7,6 +7,28 @@ let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
 const bcrypt = require('bcrypt');
 
+async function startTimer(newTask,id){
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let newEndDate=new Date()
+    newEndDate.setDate(newEndDate.getDate() - parseInt(newTask.duration.split(':')[0]))
+    newEndDate.setHours(newEndDate.getHours() - parseInt(newTask.duration.split(':')[1]))
+    newEndDate.setMinutes(newEndDate.getMinutes() - parseInt(newTask.duration.split(':')[2]))
+    newEndDate.setSeconds(newEndDate.getSeconds() - parseInt(newTask.duration.split(':')[3]))
+    await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date(newEndDate).toISOString()}' WHERE id=${id}`);
+}
+async function pauseTimer(oldTask,id){
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    var seconds = Math.floor(((new Date().getTime()) - (new Date(oldTask.endDate).getTime()))/1000);
+    var minutes = Math.floor(seconds/60);
+    var hours = Math.floor(minutes/60);
+    var days = Math.floor(hours/24);
+    hours = hours-(days*24);
+    minutes = minutes-(days*24*60)-(hours*60);
+    seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${id}`);
+}
 module.exports.importMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -112,17 +134,24 @@ module.exports.getTasks = async (req, res) => {
         machineId.push(machineData.recordset[i].id)
         allData[machineData.recordset[i].id]=[]
     }
-    for (let i = 0; i < taskData.recordset.length; i++) {
-        for (let j = 0; j < machineId.length; j++) {
+    for (let i = 0; i < taskData.recordset.length; i++) {     
+        for (let j = 0; j < machineId.length; j++) {          
             if(machineId[j]==taskData.recordset[i].machineId){
-                for (let k = 0; k < machineData.recordset[j].taskNumber.split(',').length; k++) {
-                    if (machineData.recordset[j].taskNumber.split(',')[k]==taskData.recordset[i].id) {
-                        allData[machineId[j]][ machineData.recordset[j].taskNumber.split(',').indexOf(machineData.recordset[j].taskNumber.split(',')[k])]=taskData.recordset[i]
+                const splitteTaskNumber=machineData.recordset[j].taskNumber.split(',')
+                for (let k = 0; k < splitteTaskNumber.length; k++) {
+                    if (splitteTaskNumber[k]==taskData.recordset[i].id) {
+                        allData[machineId[j]][splitteTaskNumber.indexOf(splitteTaskNumber[k])]= await taskData.recordset[i]
                     }
                 }
                 // allData[machineId[j]].push(taskData.recordset[i])
                 // delete allData.machineId
             }
+        }
+    }
+    for (let i = 0; i < Object.keys(allData).length; i++) {
+        for (let j = 0; j < allData[Object.keys(allData)[i]].length; j++) {
+            if (allData[Object.keys(allData)[i]][j]==undefined)
+                allData[Object.keys(allData)[i]].splice(j,1) 
         }
     }
     res.json(allData)
@@ -168,25 +197,10 @@ module.exports.updateTask = async (req, res) => {
 module.exports.changeTime = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
-    console.log(req.body);
     let newTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
     let oldTask=await (await request.query(`select * from Task where id=${req.body.oldTask}`)).recordset[0];
-    let newEndDate=new Date()
-    newEndDate.setDate(newEndDate.getDate() - parseInt(newTask.duration.split(':')[0]))
-    newEndDate.setHours(newEndDate.getHours() - parseInt(newTask.duration.split(':')[1]))
-    newEndDate.setMinutes(newEndDate.getMinutes() - parseInt(newTask.duration.split(':')[2]))
-    newEndDate.setSeconds(newEndDate.getSeconds() - parseInt(newTask.duration.split(':')[3]))
-    console.log(req.body.id,new Date(newEndDate),new Date(newEndDate).toISOString(),parseInt(newTask.duration.split(':')[0]));
-    await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date(newEndDate).toISOString()}' WHERE id=${req.body.id}`);
-    var seconds = Math.floor(((new Date().getTime()) - (new Date(oldTask.endDate).getTime()))/1000);
-    var minutes = Math.floor(seconds/60);
-    var hours = Math.floor(minutes/60);
-    var days = Math.floor(hours/24);
-    hours = hours-(days*24);
-    minutes = minutes-(days*24*60)-(hours*60);
-    seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
-    console.log(req.body.id,new Date(),oldTask.endDate,days+':'+hours+':'+minutes+':'+seconds);
-    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${req.body.oldTask}`);
+    startTimer(newTask,req.body.id)
+    pauseTimer(oldTask,req.body.oldTask)
     // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskId.join(',')}' WHERE id=${req.body.machineId}`);
     // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
     res.json('Deleted successfully')
@@ -237,3 +251,20 @@ module.exports.logIn= async (req, res) => {
 
 
 
+
+module.exports.start = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let newTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
+    startTimer(newTask,req.body.id)
+    await request.query(`UPDATE [dbo].[Machine] SET [status]='true' WHERE id=${newTask.machineId}`);
+    res.json('Timer has started')
+}
+module.exports.stop = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let oldTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
+    pauseTimer(oldTask,req.body.id)
+    await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${oldTask.machineId}`);
+    res.json('Timer has paused')
+}
