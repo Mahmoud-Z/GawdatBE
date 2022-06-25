@@ -219,11 +219,10 @@ module.exports.logIn= async (req, res) => {
        let match = await bcrypt.compare(password,user.recordset[0].password.trim())
 
       if (match) {
-        req.session.email = user.recordset[0].userName
-        req.session.isLoggedIn = true;
-        console.log(res);
-
-        res.json("done")
+        var token = jwt.sign({ role: 'user',user:user.userName }, 'gowdat');
+        
+        
+        res.json({token})
        
        
       }
@@ -253,3 +252,15 @@ module.exports.stop = async (req, res) => {
     await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${oldTask.machineId}`);
     res.json('Timer has paused')
 }
+
+
+// jwt.verify(token,'gowdat',(err,decodded)=>{
+//     if(err){
+//         res.json('err')
+//     }
+//     else {
+//  console.log(decodded)
+//          res.json({message : 'success'})
+//     }
+//     console.log(decodded)
+// })
