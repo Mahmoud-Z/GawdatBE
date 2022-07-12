@@ -43,6 +43,28 @@ module.exports.importMachine = async (req, res) => {
     
     res.json('inserted successfully')
 }
+module.exports.addPermission = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    await request.query(`
+    INSERT INTO [dbo].[Permission]
+           ([permissionItemId]
+           ,[reason]
+           ,[startTime]
+           ,[duration]
+           ,[type])
+     VALUES
+           (${req.body.permissionItemId}
+           ,'${req.body.reason}'
+           ,GETDATE()	
+           ,'${req.body.duration}'
+           ,'${req.body.type}')
+
+    `);
+    
+    res.json('inserted successfully')
+}
 module.exports.checkUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -177,6 +199,12 @@ module.exports.getTasks = async (req, res) => {
         }
     }
     res.json(allData)
+}
+module.exports.getTasksRight = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let data=await request.query(`select * from Task`);
+    res.json(data.recordset)
 }
 module.exports.deleteMachine = async (req, res) => {
     console.log(req.body);
