@@ -63,7 +63,7 @@ module.exports.addUser = async (req, res) => {
     bcrypt.hash(req.body.password,8, async function (err, hash) {
     await request.query(`
 
-    INSERT INTO [dbo].[user]
+    INSERT INTO [dbo].[users]
     ([userName]
     ,[password]
     ,[userCheckBox]
@@ -110,6 +110,35 @@ module.exports.importTasks = async (req, res) => {
     else
         tasksOrder=await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber+","+taskId
     await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${tasksOrder}' WHERE id=${req.body.machineId}`);
+    res.json('inserted successfully')
+}
+module.exports.importItem = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    await request.query(`
+    INSERT INTO [dbo].[Items]
+           ([itemName]
+           ,[itemPrice])
+     VALUES
+           ('${req.body.itemName}'
+           ,${req.body.itemPrice})
+    `);
+    
+    res.json('inserted successfully')
+}
+module.exports.importCustomer = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    await request.query(`
+
+INSERT INTO [dbo].[Customers]
+           ([customerName])
+     VALUES
+           ('${req.body.customerName}')
+    `);
+    
     res.json('inserted successfully')
 }
 module.exports.getMachine = async (req, res) => {
@@ -206,7 +235,7 @@ module.exports.logIn= async (req, res) => {
     //db connection
     let dbconfig = await sql.connect(config)
     //find user in db 
-    const user = await sql.query(`select * from [dbo].[user] where userName = '${email}'`)
+    const user = await sql.query(`select * from [dbo].[users] where userName = '${email}'`)
     //check if user user not found 
     if (user.recordset.length == 0) {
      
