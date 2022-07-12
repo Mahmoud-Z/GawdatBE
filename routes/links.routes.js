@@ -15,5 +15,6 @@ appRoutes.post("/changeTime", controller.changeTime)
 appRoutes.post("/logIn",controller.logIn)
 appRoutes.post("/start", controller.start)
 appRoutes.post("/stop", controller.stop)
+appRoutes.post("/viewTask", controller.viewTask)
 
 module.exports = appRoutes;

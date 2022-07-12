@@ -281,6 +281,16 @@ module.exports.stop = async (req, res) => {
     await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${oldTask.machineId}`);
     res.json('Timer has paused')
 }
+module.exports.viewTask = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let task;
+    if(req.body.id==0)
+        task=await (await request.query(`select TOP (1) * from Task`)).recordset[0];
+    else
+        task=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
+    res.json(task)
+}
 
 
 // jwt.verify(token,'gowdat',(err,decodded)=>{
