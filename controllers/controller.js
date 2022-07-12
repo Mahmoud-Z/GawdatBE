@@ -5,7 +5,7 @@ const e = require('cors');
 const sql = require('mssql')//call for using sql module
 let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 async function startTimer(newTask,id){
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -58,32 +58,30 @@ module.exports.checkUser = async (req, res) => {
 module.exports.addUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
+//     bcrypt.hash(req.body.password,8, async function (err, hash) {
+//     await request.query(`
 
-
-    bcrypt.hash(req.body.password,8, async function (err, hash) {
-    await request.query(`
-
-    INSERT INTO [dbo].[users]
-    ([userName]
-    ,[password]
-    ,[userCheckBox]
-    ,[machineCheckBox]
-    ,[taskCheckBox]
-    ,[reportCheckBox]
-    ,[permissionCheckBox])
-VALUES
-    ('${req.body.userName}'
-    ,'${hash}'
-    ,'${req.body.checkbox0}'
-    ,'${req.body.checkbox1}'
-    ,'${req.body.checkbox2}'
-    ,'${req.body.checkbox3}'
-    ,'${req.body.checkbox4}')
-    `);
+//     INSERT INTO [dbo].[users]
+//     ([userName]
+//     ,[password]
+//     ,[userCheckBox]
+//     ,[machineCheckBox]
+//     ,[taskCheckBox]
+//     ,[reportCheckBox]
+//     ,[permissionCheckBox])
+// VALUES
+//     ('${req.body.userName}'
+//     ,'${hash}'
+//     ,'${req.body.checkbox0}'
+//     ,'${req.body.checkbox1}'
+//     ,'${req.body.checkbox2}'
+//     ,'${req.body.checkbox3}'
+//     ,'${req.body.checkbox4}')
+//     `);
     
-    
-    res.json('inserted successfully')
-});
+
+//     res.json('inserted successfully')
+// });
 }
 module.exports.importTasks = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -243,25 +241,25 @@ module.exports.logIn= async (req, res) => {
 
       }
     
-    else {
+    // else {
       
-       let match = await bcrypt.compare(password,user.recordset[0].password.trim())
+    //    let match = await bcrypt.compare(password,user.recordset[0].password.trim())
 
-      if (match) {
-        var token = jwt.sign({ role: 'user',user:user.userName }, 'gowdat');
+    //   if (match) {
+    //     var token = jwt.sign({ role: 'user',user:user.userName }, 'gowdat');
         
         
-        res.json({token})
+    //     res.json({token})
        
        
-      }
+    //   }
 
-      else {
-        res.json("WRONG PASSWORD")
+    //   else {
+    //     res.json("WRONG PASSWORD")
 
-      }
+    //   }
 
-    }
+    // }
     
 
 }
