@@ -53,13 +53,15 @@ module.exports.addPermission = async (req, res) => {
            ,[reason]
            ,[startTime]
            ,[duration]
-           ,[type])
+           ,[type]
+           ,[submitted])
      VALUES
-           (${req.body.permissionItemId}
+           ('${req.body.permissionItemId}'
            ,'${req.body.reason}'
            ,GETDATE()	
            ,'${req.body.duration}'
-           ,'${req.body.type}')
+           ,'${req.body.type}'
+           ,'TRUE')
 
     `);
     
@@ -206,6 +208,12 @@ module.exports.getTasksRight = async (req, res) => {
     let data=await request.query(`select * from Task`);
     res.json(data.recordset)
 }
+module.exports.getPermissions = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let data=await request.query(`select * from Permission`);
+    res.json(data.recordset)
+}
 module.exports.deleteMachine = async (req, res) => {
     console.log(req.body);
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -316,6 +324,27 @@ module.exports.viewTask = async (req, res) => {
     else
         task=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
     res.json(task)
+}
+module.exports.stopMachine = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let machine=await (await request.query(`select * from Machine where id=${req.body.id}`)).recordset[0];
+    if (machine.taskNumber==""||machine.taskNumber==null) {
+        await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${req.body.id}`);
+    }
+    else{
+        let task=await (await request.query(`select * from task where id=${machine.taskNumber.includes(',')?machine.taskNumber.split(',')[0]:machine.taskNumber}`)).recordset[0];
+        pauseTimer(task,task.id)
+        console.log(task);
+        await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${task.machineId}`);
+    }
+    res.json('Timer has paused')
+}
+module.exports.submittedColumn = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    await request.query(`UPDATE [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
+    res.json('Permission is deleted')
 }
 
 
