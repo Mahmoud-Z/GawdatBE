@@ -278,15 +278,75 @@ module.exports.updateTask = async (req, res) => {
     await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
     res.json('Deleted successfully')
 }
+
 module.exports.changeTime = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
-    let newTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
-    let oldTask=await (await request.query(`select * from Task where id=${req.body.oldTask}`)).recordset[0];
-    startTimer(newTask,req.body.id)
-    pauseTimer(oldTask,req.body.oldTask)
-    // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskId.join(',')}' WHERE id=${req.body.machineId}`);
-    // await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
+    console.log(req.body);
+    if (req.body.previousContainer==req.body.container) {
+        if (req.body.previousIndex!=req.body.currentIndex) {
+            let machineTaskId=await (await request.query(`select taskNumber from Machine where id=${req.body.container}`)).recordset[0];
+            let newTask=await (await request.query(`select * from Task where id=${machineTaskId.taskNumber.split(',')[req.body.previousIndex]}`)).recordset[0];
+            let oldTask=await (await request.query(`select * from Task where id=${machineTaskId.taskNumber.split(',')[req.body.currentIndex]}`)).recordset[0];
+            pauseTimer(oldTask)
+            startTimer(newTask)
+        }
+    }
+    else{
+        let machineOldTaskId=await (await request.query(`select taskNumber from Machine where id=${req.body.previousContainer}`)).recordset[0];
+        let machineNewTaskId=await (await request.query(`select taskNumber from Machine where id=${req.body.container}`)).recordset[0];
+        if (req.body.previousIndex==0&&req.body.currentIndex==0) {
+            console.log("0=>0");
+            let oldTask;
+            let newTask;
+            console.log(machineOldTaskId.taskNumber.split(','));
+            console.log(machineNewTaskId.taskNumber.split(','));
+            if (machineOldTaskId.taskNumber.split(',').length>1){
+                console.log("Started");
+                console.log(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[1]}`);
+                oldTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[1]}`)).recordset[0];
+                startTimer(oldTask)
+            }
+            if (machineNewTaskId.taskNumber.split(',').length>0&&machineNewTaskId.taskNumber.split(',')[0]!=""){
+                console.log("Paused");
+                console.log(`select * from Task where id=${machineNewTaskId.taskNumber.split(',')[0]}`);
+                newTask=await (await request.query(`select * from Task where id=${machineNewTaskId.taskNumber.split(',')[0]}`)).recordset[0];
+                pauseTimer(newTask)
+            }
+        }
+        else if(req.body.previousIndex!=0&&req.body.currentIndex==0){
+            console.log("!0=>0");
+            let oldTask;
+            let newTask;
+            console.log(machineOldTaskId.taskNumber.split(','));
+            console.log(machineNewTaskId.taskNumber.split(','));
+            console.log(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[req.body.previousIndex]}`);
+            oldTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[req.body.previousIndex]}`)).recordset[0];
+            startTimer(oldTask)
+            if (machineNewTaskId.taskNumber.split(',').length>0&&machineNewTaskId.taskNumber.split(',')[0]!=""){
+                console.log(`select * from Task where id=${machineNewTaskId.taskNumber.split(',')[0]}`);
+                newTask=await (await request.query(`select * from Task where id=${machineNewTaskId.taskNumber.split(',')[0]}`)).recordset[0];
+                pauseTimer(newTask)
+            }
+        }
+        else if(req.body.previousIndex==0&&req.body.currentIndex!=0){
+            console.log("0=>!0");
+            let oldTask;
+            let newTask;
+            console.log(machineOldTaskId.taskNumber.split(','));
+            console.log(machineNewTaskId.taskNumber.split(','));
+            if (machineOldTaskId.taskNumber.split(',').length>1){
+                console.log(`Started`);
+                oldTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[1]}`)).recordset[0];
+                startTimer(oldTask)
+            }
+            if (machineNewTaskId.taskNumber.split(',').length>0&&machineNewTaskId.taskNumber.split(',')[0]!=""){
+                console.log(`Pasued`);
+                newTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[0]}`)).recordset[0];
+                pauseTimer(newTask)
+            }
+        }
+    }
     res.json('Deleted successfully')
 }
 module.exports.logIn= async (req, res) => {
