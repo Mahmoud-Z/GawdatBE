@@ -44,6 +44,29 @@ module.exports.importMachine = async (req, res) => {
     
     res.json('inserted successfully')
 }
+module.exports.permissionResponse = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    console.log(`
+    INSERT INTO [dbo].[permissionResponse]
+         ([responseMessage]
+        ,[username])
+    VALUES
+         ('${req.body.responseMessage}'
+         ,'${req.body.username}'
+    `);
+    await request.query(`
+    INSERT INTO [dbo].[permissionResponse]
+         ([responseMessage]
+        ,[username])
+    VALUES
+         ('${req.body.responseMessage}'
+         ,'${req.body.username}')
+    `);
+    
+    res.json('inserted successfully')
+}
 module.exports.addPermission = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -55,6 +78,7 @@ module.exports.addPermission = async (req, res) => {
            ,[startTime]
            ,[duration]
            ,[type]
+           ,[username]
            ,[submitted])
      VALUES
            ('${req.body.permissionItemId}'
@@ -62,6 +86,7 @@ module.exports.addPermission = async (req, res) => {
            ,GETDATE()	
            ,'${req.body.duration}'
            ,'${req.body.type}'
+           ,'${req.body.username}'
            ,'TRUE')
 
     `);
@@ -338,6 +363,21 @@ module.exports.stopMachine = async (req, res) => {
         pauseTimer(task,task.id)
         console.log(task);
         await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${task.machineId}`);
+    }
+    res.json('Timer has paused')
+}
+module.exports.startMachine = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let machine=await (await request.query(`select * from Machine where id=${req.body.id}`)).recordset[0];
+    if (machine.taskNumber==""||machine.taskNumber==null) {
+        await request.query(`UPDATE [dbo].[Machine] SET [status]='true' WHERE id=${req.body.id}`);
+    }
+    else{
+        let task=await (await request.query(`select * from task where id=${machine.taskNumber.includes(',')?machine.taskNumber.split(',')[0]:machine.taskNumber}`)).recordset[0];
+        pauseTimer(task,task.id)
+        console.log(task);
+        await request.query(`UPDATE [dbo].[Machine] SET [status]='true' WHERE id=${task.machineId}`);
     }
     res.json('Timer has paused')
 }

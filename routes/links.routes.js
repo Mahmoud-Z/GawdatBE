@@ -21,5 +21,8 @@ appRoutes.post("/start", controller.start)
 appRoutes.post("/stop", controller.stop)
 appRoutes.post("/viewTask", controller.viewTask)
 appRoutes.post("/stopMachine", controller.stopMachine)
+appRoutes.post("/startMachine", controller.startMachine)
+appRoutes.post("/permissionResponse", controller.permissionResponse)
+
 
 module.exports = appRoutes;
