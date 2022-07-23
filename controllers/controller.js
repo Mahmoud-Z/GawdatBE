@@ -15,7 +15,7 @@ async function startTimer(newTask,id){
     newEndDate.setHours(newEndDate.getHours() - parseInt(newTask.duration.split(':')[1]))
     newEndDate.setMinutes(newEndDate.getMinutes() - parseInt(newTask.duration.split(':')[2]))
     newEndDate.setSeconds(newEndDate.getSeconds() - parseInt(newTask.duration.split(':')[3]))
-    await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date(newEndDate).toISOString()}' WHERE id=${id}`);
+    await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date(newEndDate).toISOString()}' WHERE id=${newTask.id}`);
 }
 async function pauseTimer(oldTask,id){
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -27,8 +27,17 @@ async function pauseTimer(oldTask,id){
     hours = hours-(days*24);
     minutes = minutes-(days*24*60)-(hours*60);
     seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
-    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${id}`);
+    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${oldTask.id}`);
 }
+
+module.exports.permissionTimeOut = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let permissionId=await (await request.query(`select max(responseID) from permissionResponse`)).recordset[0][''];
+    await request.query(`UPDATE [dbo].[permissionResponse] SET [responseStatues]='false' WHERE [responseID]=${permissionId}`);
+    
+}
+
 module.exports.importMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -47,25 +56,30 @@ module.exports.importMachine = async (req, res) => {
 module.exports.permissionResponse = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
-
-    console.log(`
-    INSERT INTO [dbo].[permissionResponse]
-         ([responseMessage]
-        ,[username])
-    VALUES
-         ('${req.body.responseMessage}'
-         ,'${req.body.username}'
-    `);
     await request.query(`
     INSERT INTO [dbo].[permissionResponse]
          ([responseMessage]
-        ,[username])
+        ,[username]
+        ,[responseType]
+        ,[responseTime]
+        ,[responseStatues]
+        )
     VALUES
          ('${req.body.responseMessage}'
-         ,'${req.body.username}')
+         ,'${req.body.username}'
+         ,'${req.body.responseType}'
+         ,GETDATE()	
+         ,'${req.body.responseStatues}'
+         )
     `);
-    
     res.json('inserted successfully')
+}
+module.exports.getPermissionResponse = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let data = await request.query(`select * from permissionResponse where username='${req.body.username}'`);
+    console.log(`select * from permissionResponse where username='${req.body.username}'`);
+    res.json(data.recordset)
 }
 module.exports.addPermission = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -337,11 +351,13 @@ module.exports.changeTime = async (req, res) => {
             console.log(machineNewTaskId.taskNumber.split(','));
             if (machineOldTaskId.taskNumber.split(',').length>1){
                 console.log(`Started`);
+                console.log(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[1]}`);
                 oldTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[1]}`)).recordset[0];
                 startTimer(oldTask)
             }
             if (machineNewTaskId.taskNumber.split(',').length>0&&machineNewTaskId.taskNumber.split(',')[0]!=""){
                 console.log(`Pasued`);
+                console.log(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[0]}`);
                 newTask=await (await request.query(`select * from Task where id=${machineOldTaskId.taskNumber.split(',')[0]}`)).recordset[0];
                 pauseTimer(newTask)
             }
