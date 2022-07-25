@@ -5,7 +5,7 @@ const e = require('cors');
 const sql = require('mssql')//call for using sql module
 let mssql = require('../configuration/mssql-pool-management.js')
 const config = require('../Configuration/config')//call for using configuration module that we create it to store database conaction
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 async function startTimer(newTask,id){
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -29,7 +29,6 @@ async function pauseTimer(oldTask,id){
     seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
     await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${oldTask.id}`);
 }
-
 module.exports.permissionTimeOut = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -37,7 +36,6 @@ module.exports.permissionTimeOut = async (req, res) => {
     await request.query(`UPDATE [dbo].[permissionResponse] SET [responseStatues]='false' WHERE [responseID]=${permissionId}`);
     
 }
-
 module.exports.importMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -122,30 +120,30 @@ module.exports.checkUser = async (req, res) => {
 module.exports.addUser = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
-    bcrypt.hash(req.body.password,8, async function (err, hash) {
-    await request.query(`
+//     bcrypt.hash(req.body.password,8, async function (err, hash) {
+//     await request.query(`
 
-    INSERT INTO [dbo].[users]
-    ([userName]
-    ,[password]
-    ,[userCheckBox]
-    ,[machineCheckBox]
-    ,[taskCheckBox]
-    ,[reportCheckBox]
-    ,[permissionCheckBox])
-VALUES
-    ('${req.body.userName}'
-    ,'${hash}'
-    ,'${req.body.checkbox0}'
-    ,'${req.body.checkbox1}'
-    ,'${req.body.checkbox2}'
-    ,'${req.body.checkbox3}'
-    ,'${req.body.checkbox4}')
-    `);
+//     INSERT INTO [dbo].[users]
+//     ([userName]
+//     ,[password]
+//     ,[userCheckBox]
+//     ,[machineCheckBox]
+//     ,[taskCheckBox]
+//     ,[reportCheckBox]
+//     ,[permissionCheckBox])
+// VALUES
+//     ('${req.body.userName}'
+//     ,'${hash}'
+//     ,'${req.body.checkbox0}'
+//     ,'${req.body.checkbox1}'
+//     ,'${req.body.checkbox2}'
+//     ,'${req.body.checkbox3}'
+//     ,'${req.body.checkbox4}')
+//     `);
     
 
-    res.json('inserted successfully')
-});
+//     res.json('inserted successfully')
+// });
 }
 module.exports.importTasks = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -154,17 +152,55 @@ module.exports.importTasks = async (req, res) => {
     let tasksOrder;
     date += ((req.body.TaskDurationH*60*60*1000)+(req.body.TaskDurationM*60*1000))
     await request.query(`
-    
-    INSERT INTO [dbo].[Task]
-               ([name]
-               ,[duration]
-               ,[endDate]
-               ,[machineId])
-         VALUES
-               ('${req.body.name}'
-               ,'${req.body.TaskDurationH}:${req.body.TaskDurationM}'
-               ,'${new Date(date).toISOString()}'
-               ,'${req.body.machineId}')
+INSERT INTO [dbo].[Task]
+           (
+           ,[customerName]
+           ,[customerCode]
+           ,[orderStatus]
+           ,[orderNumber]
+           ,[orderTypeCode]
+           ,[orderTypeName]
+           ,[orderPriority]
+           ,[orderTotalAmount]
+           ,[orderSheets]
+           ,[piecesPerSheets]
+           ,[piecePrice]
+           ,[totalPieces]
+           ,[sheetPrice]
+           ,[CNC]
+           ,[CTB]
+           ,[stamp]
+           ,[stepCode]
+           ,[stepName]
+           ,[stepFactor]
+           ,[endDate]
+           ,[machineId]
+           ,[duration])
+     VALUES
+           (
+            '${req.body.CustomerName}',
+            '${req.body.CustomerCode}',
+            '${req.body.OrderReference}',
+            '${req.body.OrderStatus}',
+            '${req.body.OrderNumber}',
+            '${req.body.OrderTypeCode}',
+            '${req.body.OrderTypeName}',
+            '${req.body.OrderPriority}',
+            '${req.body.OrderTotalAmount}',
+            '${req.body.OrderSheets}',
+            '${req.body.PiecesPreSheets}',
+            '${req.body.TotalPieces}',
+            '${req.body.SheetPrice}',
+            '${req.body.CNC}',
+            '${req.body.CTB}',
+            '${req.body.Stamp}',
+            '${req.body.StepCode}',
+            '${req.body.StepName}',
+            '${req.body.StepFactor}',
+            '${req.body.TaskDuration}',
+            Getdate(),
+            '${req.body.machineId}'
+           )
     `);
     let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
     if (await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber=='') 
@@ -292,7 +328,6 @@ module.exports.updateTask = async (req, res) => {
     await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${req.body.taskIDsBefore.join(',')}' WHERE id=${req.body.machineIdBefore}`);
     res.json('Deleted successfully')
 }
-
 module.exports.changeTime = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
@@ -462,9 +497,14 @@ module.exports.submittedColumn = async (req, res) => {
     let request = new sql.Request(sqlPool)
     await request.query(`UPDATE [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
     res.json('Permission is deleted')
+
 }
-
-
+module.exports.addOrder = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    await request.query(`UPDATE [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
+    res.json('Permission is deleted')
+}
 // jwt.verify(token,'gowdat',(err,decodded)=>{
 //     if(err){
 //         res.json('err')
