@@ -210,6 +210,35 @@ INSERT INTO [dbo].[Task]
     await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${tasksOrder}' WHERE id=${req.body.machineId}`);
     res.json('inserted successfully')
 }
+module.exports.editOrder = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+
+    await request.query(`
+    
+    PDATE [dbo].[Task]
+    SET [orderReference] = ''
+       ,[orderStatus] = '<orderStatus, nvarchar(50),>'
+       ,[orderNumber] = <orderNumber, int,>
+       ,[orderTypeCode] = '<orderTypeCode, nvarchar(50),>'
+       ,[orderTypeName] = '<orderTypeName, nvarchar(50),>'
+       ,[orderPriority] = '<orderPriority, nvarchar(50),>'
+       ,[orderTotalAmount] = <orderTotalAmount, float,>
+       ,[orderSheets] = <orderSheets, int,>
+       ,[piecesPerSheets] = <piecesPerSheets, int,>
+       ,[piecePrice] = <piecePrice, float,>
+       ,[totalPieces] = <totalPieces, int,>
+       ,[sheetPrice] = <sheetPrice, float,>
+       ,[CNC] = ''
+       ,[CTB] = ''
+       ,[stamp] = ''
+       ,[stepCode] = '<stepCode, nvarchar(50),>'
+       ,[stepName] = <stepName, nvarchar(50),>
+       ,[stepFactor] = <stepFactor, nvarchar(50),>
+               
+    `);
+    res.json('inserted successfully')
+}
 module.exports.importItem = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)

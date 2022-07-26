@@ -10,6 +10,10 @@ appRoutes.get("/getTasksRight", controller.getTasksRight)
 appRoutes.get("/getPermissions", controller.getPermissions)
 appRoutes.post("/getPermissionResponse", controller.getPermissionResponse)
 appRoutes.post("/permissionTimeOut", controller.permissionTimeOut)
+<<<<<<< Updated upstream
+=======
+appRoutes.post("/editOrder", controller.editOrder)
+>>>>>>> Stashed changes
 appRoutes.post("/importItem", controller.importItem)
 appRoutes.post("/importCustomer", controller.importCustomer)
 appRoutes.post("/addPermission", controller.addPermission)
