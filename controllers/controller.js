@@ -151,56 +151,64 @@ module.exports.importTasks = async (req, res) => {
     let date=new Date().getTime();
     let tasksOrder;
     date += ((req.body.TaskDurationH*60*60*1000)+(req.body.TaskDurationM*60*1000))
+
+
+
+
     await request.query(`
-INSERT INTO [dbo].[Task]
-           (
-           ,[customerName]
-           ,[customerCode]
-           ,[orderStatus]
-           ,[orderNumber]
-           ,[orderTypeCode]
-           ,[orderTypeName]
-           ,[orderPriority]
-           ,[orderTotalAmount]
-           ,[orderSheets]
-           ,[piecesPerSheets]
-           ,[piecePrice]
-           ,[totalPieces]
-           ,[sheetPrice]
-           ,[CNC]
-           ,[CTB]
-           ,[stamp]
-           ,[stepCode]
-           ,[stepName]
-           ,[stepFactor]
-           ,[endDate]
-           ,[machineId]
-           ,[duration])
-     VALUES
-           (
-            '${req.body.CustomerName}',
-            '${req.body.CustomerCode}',
-            '${req.body.OrderReference}',
-            '${req.body.OrderStatus}',
-            '${req.body.OrderNumber}',
-            '${req.body.OrderTypeCode}',
-            '${req.body.OrderTypeName}',
-            '${req.body.OrderPriority}',
-            '${req.body.OrderTotalAmount}',
-            '${req.body.OrderSheets}',
-            '${req.body.PiecesPreSheets}',
-            '${req.body.TotalPieces}',
-            '${req.body.SheetPrice}',
-            '${req.body.CNC}',
-            '${req.body.CTB}',
-            '${req.body.Stamp}',
-            '${req.body.StepCode}',
-            '${req.body.StepName}',
-            '${req.body.StepFactor}',
-            '${req.body.TaskDuration}',
-            Getdate(),
-            '${req.body.machineId}'
-           )
+    INSERT INTO [dbo].[Task]
+    ([customerName]
+       ,[customerCode]
+       ,[orderReference]
+       ,[orderStatus]
+       ,[orderNumber]
+       ,[orderTypeCode]
+       ,[orderTypeName]
+       ,[orderPriority]
+       ,[orderTotalAmount]
+       ,[orderSheets]
+       ,[piecesPerSheets]
+       ,[piecePrice]
+       ,[totalPieces]
+       ,[sheetPrice]
+       ,[paperType]
+       ,[leatherType]
+       ,[CNC]
+       ,[CTB]
+       ,[stamp]
+       ,[stepCode]
+       ,[stepName]
+       ,[stepFactor]
+       ,[endDate]
+       ,[machineId]
+        )
+        VALUES
+              (
+               '${req.body.CustomerName}',
+               '${req.body.CustomerCode}',
+               '${req.body.OrderReference}',
+               '${req.body.OrderStatus}',
+               ${req.body.OrderNumber},
+               '${req.body.OrderTypeCode}',
+               '${req.body.OrderTypeName}',
+               '${req.body.OrderPriority}',
+               ${req.body.OrderTotalAmount},
+               ${req.body.OrderSheets},
+               ${req.body.PiecesPreSheets},
+               ${req.body.PiecePrice},
+               ${req.body.TotalPieces},
+               ${req.body.SheetPrice},
+               '${req.body.PaperType}',
+               '${req.body.LeatherType}',
+               '${req.body.CNC}',
+               '${req.body.CTB}',
+               '${req.body.Stamp}',
+               '${req.body.StepCode}',
+               '${req.body.StepName}',
+               '${req.body.StepFactor}',
+               Getdate(),
+               '1'
+              )
     `);
     let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
     if (await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber=='') 
@@ -216,7 +224,7 @@ module.exports.editOrder = async (req, res) => {
 
     await request.query(`
     
-    PDATE [dbo].[Task]
+    UPDATE [dbo].[Task]
     SET [orderReference] = ''
        ,[orderStatus] = '<orderStatus, nvarchar(50),>'
        ,[orderNumber] = <orderNumber, int,>
