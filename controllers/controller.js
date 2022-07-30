@@ -261,9 +261,12 @@ module.exports.importCustomer = async (req, res) => {
     await request.query(`
 
 INSERT INTO [dbo].[Customers]
-           ([customerName])
+           ([customerName]
+            ,[customerCode])
      VALUES
-           ('${req.body.customerName}')
+           ('${req.body.customerName}',
+           '${req.body.customerCode}'
+           )
     `);
     
     res.json('inserted successfully')
@@ -272,6 +275,12 @@ module.exports.getMachine = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
     let data=await request.query(`select * from Machine`);
+    res.json(data.recordset)
+}
+module.exports.getCustomers = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let data=await request.query(`select * from Customers`);
     res.json(data.recordset)
 }
 module.exports.getTasks = async (req, res) => {

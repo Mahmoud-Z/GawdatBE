@@ -1,13 +1,17 @@
 const appRoutes = require('express').Router();
 const controller=require('../controllers/controller')
 
-appRoutes.post("/checkUser", controller.checkUser)
-appRoutes.post("/importMachine", controller.importMachine)
-appRoutes.post("/addUser", controller.addUser)
+//getFunctions
 appRoutes.get("/getMachine", controller.getMachine)
 appRoutes.get("/getTasks", controller.getTasks)
 appRoutes.get("/getTasksRight", controller.getTasksRight)
 appRoutes.get("/getPermissions", controller.getPermissions)
+appRoutes.get("/getCustomers", controller.getCustomers)
+
+//postFunction
+appRoutes.post("/checkUser", controller.checkUser)
+appRoutes.post("/importMachine", controller.importMachine)
+appRoutes.post("/addUser", controller.addUser)
 appRoutes.post("/getPermissionResponse", controller.getPermissionResponse)
 appRoutes.post("/permissionTimeOut", controller.permissionTimeOut)
 appRoutes.post("/editOrder", controller.editOrder)
