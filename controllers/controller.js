@@ -152,7 +152,7 @@ module.exports.importTasks = async (req, res) => {
     let tasksOrder;
     date += ((req.body.TaskDurationH*60*60*1000)+(req.body.TaskDurationM*60*1000))
 
-
+    console.log(req.body);
 
 
     await request.query(`
@@ -181,6 +181,7 @@ module.exports.importTasks = async (req, res) => {
        ,[stepFactor]
        ,[endDate]
        ,[machineId]
+       ,[machinePath]
         )
         VALUES
               (
@@ -207,15 +208,19 @@ module.exports.importTasks = async (req, res) => {
                '${req.body.StepName}',
                '${req.body.StepFactor}',
                Getdate(),
-               '1'
+               '1',
+               '${req.body.MachinePath}'
               )
     `);
+    console.log(`select max(id) from Task`);
     let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
-    if (await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber=='') 
+
+    if (await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber=='') 
         tasksOrder=taskId
     else
-        tasksOrder=await (await request.query(`select taskNumber from Machine where id=${req.body.machineId}`)).recordset[0].taskNumber+","+taskId
-    await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${tasksOrder}' WHERE id=${req.body.machineId}`);
+
+        tasksOrder=await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber+","+taskId
+    await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${tasksOrder}' WHERE id=1`);
     res.json('inserted successfully')
 }
 module.exports.editOrder = async (req, res) => {
