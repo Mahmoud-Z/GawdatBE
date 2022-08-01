@@ -207,7 +207,7 @@ module.exports.importTasks = async (req, res) => {
                '${req.body.StepCode}',
                '${req.body.StepName}',
                '${req.body.StepFactor}',
-               Getdate(),
+               '${new Date().toISOString()}',
                '1',
                '${req.body.MachinePath}'
               )
