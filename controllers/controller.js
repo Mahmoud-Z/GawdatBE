@@ -503,6 +503,22 @@ module.exports.stop = async (req, res) => {
     await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${oldTask.machineId}`);
     res.json('Timer has paused')
 }
+module.exports.startTask = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let newTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
+    startTimer(newTask,req.body.id)
+    await request.query(`UPDATE [dbo].[Task] SET [status]='true' WHERE id=${req.body.id}`);
+    res.json('Timer has started')
+}
+module.exports.stopTask = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    let oldTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
+    pauseTimer(oldTask,req.body.id)
+    await request.query(`UPDATE [dbo].[Task] SET [status]='false' WHERE id=${req.body.id}`);
+    res.json('Timer has paused')
+}
 module.exports.viewTask = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
