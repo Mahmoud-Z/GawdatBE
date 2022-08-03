@@ -177,9 +177,11 @@ module.exports.importTasks = async (req, res) => {
        ,[stepCode]
        ,[stepName]
        ,[stepFactor]
-       ,[endDate]
+       ,[startDate]
        ,[machineId]
        ,[machinePath]
+       ,[status]
+       ,[duration]
         )
         VALUES
               (
@@ -207,7 +209,9 @@ module.exports.importTasks = async (req, res) => {
                '${req.body.StepFactor}',
                '${new Date().toISOString()}',
                '1',
-               '${req.body.MachinePath}'
+               '${req.body.MachinePath}',
+               'false',
+               '0:0:0:0'
               )
     `);
     let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
