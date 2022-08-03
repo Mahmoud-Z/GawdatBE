@@ -15,11 +15,12 @@ async function startTimer(newTask,id){
     newEndDate.setHours(newEndDate.getHours() - parseInt(newTask.duration.split(':')[1]))
     newEndDate.setMinutes(newEndDate.getMinutes() - parseInt(newTask.duration.split(':')[2]))
     newEndDate.setSeconds(newEndDate.getSeconds() - parseInt(newTask.duration.split(':')[3]))
+    
     await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date(newEndDate).toISOString()}' WHERE id=${newTask.id}`);
 }
 async function pauseTimer(oldTask,id){
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
-    let request = new sql.Request(sqlPool)
+    let request = new sql.Request(sqlPool)  
     var seconds = Math.floor(((new Date().getTime()) - (new Date(oldTask.endDate).getTime()))/1000);
     var minutes = Math.floor(seconds/60);
     var hours = Math.floor(minutes/60);
@@ -152,9 +153,6 @@ module.exports.importTasks = async (req, res) => {
     let tasksOrder;
     date += ((req.body.TaskDurationH*60*60*1000)+(req.body.TaskDurationM*60*1000))
 
-    console.log(req.body);
-
-
     await request.query(`
     INSERT INTO [dbo].[Task]
     ([customerName]
@@ -212,7 +210,6 @@ module.exports.importTasks = async (req, res) => {
                '${req.body.MachinePath}'
               )
     `);
-    console.log(`select max(id) from Task`);
     let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
 
     if (await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber=='') 
@@ -226,30 +223,45 @@ module.exports.importTasks = async (req, res) => {
 module.exports.editOrder = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
+    let date=new Date().getTime();
 
     await request.query(`
     
     UPDATE [dbo].[Task]
-    SET [orderReference] = ''
-       ,[orderStatus] = '<orderStatus, nvarchar(50),>'
-       ,[orderNumber] = <orderNumber, int,>
-       ,[orderTypeCode] = '<orderTypeCode, nvarchar(50),>'
-       ,[orderTypeName] = '<orderTypeName, nvarchar(50),>'
-       ,[orderPriority] = '<orderPriority, nvarchar(50),>'
-       ,[orderTotalAmount] = <orderTotalAmount, float,>
-       ,[orderSheets] = <orderSheets, int,>
-       ,[piecesPerSheets] = <piecesPerSheets, int,>
-       ,[piecePrice] = <piecePrice, float,>
-       ,[totalPieces] = <totalPieces, int,>
-       ,[sheetPrice] = <sheetPrice, float,>
-       ,[CNC] = ''
-       ,[CTB] = ''
-       ,[stamp] = ''
-       ,[stepCode] = '<stepCode, nvarchar(50),>'
-       ,[stepName] = <stepName, nvarchar(50),>
-       ,[stepFactor] = <stepFactor, nvarchar(50),>
-               
+    SET [customerName] = '${req.body.CustomerName}'
+       ,[customerCode] = '${req.body.CustomerCode}'
+       ,[orderReference] = '${req.body.OrderReference}'
+       ,[orderStatus] = '${req.body.OrderStatus}'
+       ,[orderNumber] = ${req.body.OrderNumber}
+       ,[orderTypeCode] = '${req.body.OrderTypeCode}'
+       ,[orderTypeName] = '${req.body.OrderTypeName}'
+       ,[orderPriority] = '${req.body.OrderPriority}'
+       ,[orderTotalAmount] = ${req.body.OrderTotalAmount}
+       ,[orderSheets] = ${req.body.OrderSheets}
+       ,[piecesPerSheets] = ${req.body.PiecesPreSheets}
+       ,[piecePrice] = ${req.body.PiecePrice}
+       ,[totalPieces] = ${req.body.TotalPieces}
+       ,[sheetPrice] = ${req.body.SheetPrice}
+       ,[paperType] = '${req.body.PaperType}'
+       ,[leatherType] = '${req.body.LeatherType}'
+       ,[CNC] = '${req.body.CNC}'
+       ,[CTB] = '${req.body.CTB}'
+       ,[stamp] = '${req.body.Stamp}'
+       ,[stepCode] = '${req.body.StepCode}'
+       ,[stepName] = '${req.body.StepName}'
+       ,[stepFactor] = '${req.body.StepFactor}'
+       ,[machineId] = '1'
+       ,[machinePath] ='${req.body.MachinePath}'
     `);
+
+    let taskId=await (await request.query(`select max(id) from Task`)).recordset[0][""]
+
+    if (await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber==null || await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber=='') 
+        tasksOrder=taskId
+    else
+
+        tasksOrder=await (await request.query(`select taskNumber from Machine where id=1`)).recordset[0].taskNumber+","+taskId
+    await request.query(`UPDATE [dbo].[Machine] SET [taskNumber]='${tasksOrder}' WHERE id=1`);
     res.json('inserted successfully')
 }
 module.exports.importItem = async (req, res) => {
