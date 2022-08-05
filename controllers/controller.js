@@ -530,6 +530,7 @@ module.exports.startTask = async (req, res) => {
 module.exports.stopTask = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
+    console.log('sadsadsa');
     let oldTask=await (await request.query(`select * from Task where id=${req.body.id}`)).recordset[0];
     pauseTimer(oldTask,req.body.id)
     await request.query(`UPDATE [dbo].[Task] SET [status]='false' WHERE id=${req.body.id}`);
