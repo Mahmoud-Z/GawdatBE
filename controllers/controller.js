@@ -29,7 +29,7 @@ async function pauseTimer(oldTask,id){
     hours = hours-(days*24);
     minutes = minutes-(days*24*60)-(hours*60);
     seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
-    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}',[status]='false' WHERE id=${oldTask.id}`);
+    await request.query(`UPDATE [dbo].[Task] SET [duration]='${days+':'+hours+':'+minutes+':'+seconds}' WHERE id=${id}`);
 }
 module.exports.permissionTimeOut = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
@@ -562,22 +562,6 @@ module.exports.stopMachine = async (req, res) => {
             pauseTimer(task[i],task[i].id)
         }
         await request.query(`UPDATE [dbo].[Machine] SET [status]='false' WHERE id=${req.body.id}`);
-    }
-    res.json('Timer has paused')
-}
-module.exports.startMachine = async (req, res) => {
-    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
-    let request = new sql.Request(sqlPool)
-    let machine=await (await request.query(`select * from Machine where id=${req.body.id}`)).recordset[0];
-    if (machine.taskNumber==""||machine.taskNumber==null) {
-        await request.query(`UPDATE [dbo].[Machine] SET [status]='true' WHERE id=${req.body.id}`);
-    }
-    else{
-        let task=await (await request.query(`select * from task where id in (${machine.taskNumber})`)).recordset;
-        for (let i = 0; i < task.length; i++) {
-            startTimer(task[i],task[i].id)
-        }
-        await request.query(`UPDATE [dbo].[Machine] SET [status]='true' WHERE id=${req.body.id}`);
     }
     res.json('Timer has paused')
 }
