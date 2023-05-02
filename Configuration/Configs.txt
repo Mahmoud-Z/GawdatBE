@@ -1,6 +1,6 @@
 {
   "user": "sa",
   "password": "P@ssw0rd",
-  "server": "localhost",
-  "database": "DragDrop"
+  "server": "DESKTOP-NT39CCP\\MSSQLSERVERZ",
+  "database": "DragNDrops"
 }
