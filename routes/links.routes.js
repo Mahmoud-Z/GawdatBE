@@ -34,5 +34,6 @@ appRoutes.post("/stopMachine", controller.stopMachine)
 appRoutes.post("/startMachine", controller.startMachine)
 appRoutes.post("/permissionResponse", controller.permissionResponse)
 appRoutes.post("/addOrder", controller.addOrder)
+appRoutes.post("/finishTask", controller.finishTask)
 
 module.exports = appRoutes;
