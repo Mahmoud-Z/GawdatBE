@@ -7,7 +7,6 @@ appRoutes.get("/getTasks", controller.getTasks)
 appRoutes.get("/getTasksRight", controller.getTasksRight)
 appRoutes.get("/getPermissions", controller.getPermissions)
 appRoutes.get("/getCustomers", controller.getCustomers)
-
 //postFunction
 appRoutes.post("/checkUser", controller.checkUser)
 appRoutes.post("/importMachine", controller.importMachine)
@@ -34,6 +33,10 @@ appRoutes.post("/stopMachine", controller.stopMachine)
 appRoutes.post("/startMachine", controller.startMachine)
 appRoutes.post("/permissionResponse", controller.permissionResponse)
 appRoutes.post("/addOrder", controller.addOrder)
-appRoutes.post("/finishTask", controller.finishTask)
+appRoutes.post("/MachinesReport", controller.MachinesReport)
+appRoutes.get("/TotalMachinesReport", controller.TotalMachinesReport)
+appRoutes.post("/TaskReport", controller.TaskReport)
+
+
 
 module.exports = appRoutes;
