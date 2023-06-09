@@ -624,7 +624,7 @@ module.exports.finishTask = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)
     await request.query(`UPDATE [dbo].[Task] SET [endDate]='${new Date().toISOString()}',[orderStatus] = 'Done',machineId = '',status = 'false' WHERE id=${req.body.id}`);
-    res.json('Permission is deleted')
+    res.json('Task is finished')
 }
 // jwt.verify(token,'gowdat',(err,decodded)=>{
 //     if(err){
