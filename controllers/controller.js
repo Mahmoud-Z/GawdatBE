@@ -599,6 +599,27 @@ module.exports.addOrder = async (req, res) => {
     await request.query(`UPDATE [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
     res.json('Permission is deleted')
 }
+module.exports.MachinesReport = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    await request.query(`select  [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
+    res.json('Permission is deleted')
+}
+module.exports.TotalMachinesReport = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+   var TotalMachinesReport = await request.query(` SELECT   SUM(len(Machine.taskNumber) - len(replace(Machine.taskNumber, ',', '')) +1) AS numOfTasks, SUM(Task.orderSheets) 
+    AS numOfSheets , SUM(Task.orderTotalAmount) AS TOTAL FROM Task  
+	left JOIN Machine on  Task.id in(SELECT value FROM STRING_SPLIT(Machine.taskNumber, ','))`);
+    console.log(TotalMachinesReport.recordset[0]);
+    res.json(TotalMachinesReport.recordset)
+}
+module.exports.TaskReport = async (req, res) => {
+    let sqlPool = await mssql.GetCreateIfNotExistPool(config)
+    let request = new sql.Request(sqlPool)
+    await request.query(`UPDATE [dbo].[Permission] SET [submitted]='FALSE' WHERE permissionId=${req.body.permissionId}`);
+    res.json('Permission is deleted')
+}
 module.exports.finishTask = async (req, res) => {
     let sqlPool = await mssql.GetCreateIfNotExistPool(config)
     let request = new sql.Request(sqlPool)

@@ -36,6 +36,7 @@ appRoutes.post("/addOrder", controller.addOrder)
 appRoutes.post("/MachinesReport", controller.MachinesReport)
 appRoutes.get("/TotalMachinesReport", controller.TotalMachinesReport)
 appRoutes.post("/TaskReport", controller.TaskReport)
+appRoutes.post("/finishTask", controller.finishTask) 
 
 
 
